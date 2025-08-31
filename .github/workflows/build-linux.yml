@@ -51,21 +51,14 @@ jobs:
           wget \
           unzip \
           pkg-config \
-          libjsoncpp-dev \
           git
         
         # Create symlink for json headers in expected location
         sudo ln -sf /usr/include/jsoncpp/json /usr/include/json
         
-        # Fix jsoncpp library linking issue
-        echo "=== jsoncpp library info ==="
-        find /usr -name "*jsoncpp*" -type f 2>/dev/null | head -10 || true
-        # Create static-libs directory structure with proper ownership
+        # Create static-libs directory structure for dependencies
         mkdir -p drodrpg/Master/Linux/static-libs/lib
         mkdir -p drodrpg/Master/Linux/static-libs/include
-        if [ -f /usr/lib/x86_64-linux-gnu/libjsoncpp.a ]; then
-          cp /usr/lib/x86_64-linux-gnu/libjsoncpp.a drodrpg/Master/Linux/static-libs/lib/
-        fi
     
     - name: Cache downloaded sources
       uses: actions/cache@v4
@@ -89,28 +82,6 @@ jobs:
       run: |
         chmod +x build-deps.sh
         ./build-deps.sh
-        
-        # Copy jsoncpp after static deps are built
-        echo "=== Copying jsoncpp library ==="
-        echo "Searching for jsoncpp library files..."
-        find /usr -name "*jsoncpp*" -type f 2>/dev/null || true
-        
-        # Try different possible locations
-        if [ -f /usr/lib/x86_64-linux-gnu/libjsoncpp.a ]; then
-          cp /usr/lib/x86_64-linux-gnu/libjsoncpp.a static-libs/lib/
-          echo "✓ Copied libjsoncpp.a from /usr/lib/x86_64-linux-gnu/"
-        elif [ -f /usr/lib/libjsoncpp.a ]; then
-          cp /usr/lib/libjsoncpp.a static-libs/lib/
-          echo "✓ Copied libjsoncpp.a from /usr/lib/"
-        else
-          echo "✗ libjsoncpp.a static library not found - checking shared library"
-          if [ -f /usr/lib/x86_64-linux-gnu/libjsoncpp.so ]; then
-            echo "Found shared library at /usr/lib/x86_64-linux-gnu/libjsoncpp.so"
-            echo "Note: Using shared library instead of static"
-          else
-            echo "✗ No jsoncpp library found at all"
-          fi
-        fi
         
         # Debug: List what's in static-libs
         echo "=== Static libraries built ==="
@@ -216,21 +187,14 @@ jobs:
           wget \
           unzip \
           pkg-config \
-          libjsoncpp-dev \
           git
         
         # Create symlink for json headers in expected location
         sudo ln -sf /usr/include/jsoncpp/json /usr/include/json
         
-        # Fix jsoncpp library linking issue
-        echo "=== jsoncpp library info ==="
-        find /usr -name "*jsoncpp*" -type f 2>/dev/null | head -10 || true
-        # Create static-libs directory structure with proper ownership
+        # Create static-libs directory structure for dependencies
         mkdir -p drodrpg/Master/Linux/static-libs/lib
         mkdir -p drodrpg/Master/Linux/static-libs/include
-        if [ -f /usr/lib/x86_64-linux-gnu/libjsoncpp.a ]; then
-          cp /usr/lib/x86_64-linux-gnu/libjsoncpp.a drodrpg/Master/Linux/static-libs/lib/
-        fi
     
     - name: Cache downloaded sources
       uses: actions/cache@v4
@@ -271,28 +235,6 @@ jobs:
       run: |
         chmod +x build-deps.sh
         ./build-deps.sh
-        
-        # Copy jsoncpp after static deps are built
-        echo "=== Copying jsoncpp library ==="
-        echo "Searching for jsoncpp library files..."
-        find /usr -name "*jsoncpp*" -type f 2>/dev/null || true
-        
-        # Try different possible locations
-        if [ -f /usr/lib/x86_64-linux-gnu/libjsoncpp.a ]; then
-          cp /usr/lib/x86_64-linux-gnu/libjsoncpp.a static-libs/lib/
-          echo "✓ Copied libjsoncpp.a from /usr/lib/x86_64-linux-gnu/"
-        elif [ -f /usr/lib/libjsoncpp.a ]; then
-          cp /usr/lib/libjsoncpp.a static-libs/lib/
-          echo "✓ Copied libjsoncpp.a from /usr/lib/"
-        else
-          echo "✗ libjsoncpp.a static library not found - checking shared library"
-          if [ -f /usr/lib/x86_64-linux-gnu/libjsoncpp.so ]; then
-            echo "Found shared library at /usr/lib/x86_64-linux-gnu/libjsoncpp.so"
-            echo "Note: Using shared library instead of static"
-          else
-            echo "✗ No jsoncpp library found at all"
-          fi
-        fi
         
         # Debug: List what's in static-libs
         echo "=== Static libraries built ==="

@@ -94,6 +94,9 @@ download_extract "https://curl.se/download/curl-7.88.1.tar.gz" \
 download_extract "https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.xz" \
     "expat-2.5.0.tar.xz" "expat-2.5.0"
 
+download_extract "https://github.com/open-source-parsers/jsoncpp/archive/1.9.5.tar.gz" \
+    "jsoncpp-1.9.5.tar.gz" "jsoncpp-1.9.5"
+
 # Check if a library exists
 library_exists() {
     local lib_name="$1"
@@ -167,6 +170,7 @@ build_library "expat-2.5.0" "" "" "expat"
 build_library "curl-7.88.1" "--disable-ldap --disable-ldaps --disable-rtsp --disable-dict --disable-telnet --disable-tftp --disable-pop3 --disable-imap --disable-smb --disable-smtp --disable-gopher --disable-manual --without-librtmp --without-libidn2 --without-libpsl --without-zstd --without-brotli --enable-static --with-openssl" "" "curl"
 build_library "SDL2_mixer-2.6.3" "--with-ogg=$INSTALL_DIR --with-vorbis=$INSTALL_DIR" "" "SDL2_mixer"
 build_library "SDL2_ttf-2.20.2" "--with-freetype-prefix=$INSTALL_DIR" "" "SDL2_ttf"
+build_library "jsoncpp-1.9.5" "-DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF" "" "jsoncpp"
 
 # Handle metakit separately (it's in a different location)
 if ! $FORCE_REBUILD && library_exists "mk4"; then
