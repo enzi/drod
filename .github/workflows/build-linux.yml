@@ -15,7 +15,6 @@ jobs:
       matrix:
         config:
           - { name: "Release x64", arch: "x86_64", build: "release", flags: "-64 -release" }
-          - { name: "Debug x64", arch: "x86_64", build: "debug", flags: "-64 -debug" }
     
     steps:
     - name: Checkout repository
@@ -136,8 +135,11 @@ jobs:
       run: |
         BUILD_DIR=$(find builds -name "drod" -type f | head -1 | xargs dirname)
         if [ -n "$BUILD_DIR" ]; then
+          # Copy required SDL2 shared libs into build dir
+          cp /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0 "$BUILD_DIR/" || true
+
           cd "$BUILD_DIR"
-          tar -czf "drodrpg-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" drod *.dbg
+          tar -czf "drodrpg-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" drod libSDL2-*.so.0 2 > /dev/null
           mv "drodrpg-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" ../../
         fi
     
@@ -246,7 +248,7 @@ jobs:
         chmod +x ninjamaker build
         
         # Build all main variants
-        for build_flag in "-release" "-debug" "-dev" "-beta"; do
+        for build_flag in "-release" "-dev" "-beta"; do
           echo "Building with flags: -64 $build_flag"
           ./ninjamaker -64 $build_flag
           ./build
@@ -259,8 +261,11 @@ jobs:
         for build_dir in builds/*/; do
           if [ -f "$build_dir/drod" ]; then
             variant=$(basename "$build_dir")
+            # Copy SDL2 libs into each build dir
+            cp /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0 "$build_dir/" || true
+
             cd "$build_dir"
-            tar -czf "../../dist/drodrpg-linux-${variant}.tar.gz" drod *.dbg 2>/dev/null || tar -czf "../../dist/drodrpg-linux-${variant}.tar.gz" drod
+            tar -czf "../../dist/drodrpg-linux-${variant}.tar.gz" drod *.dbg libSDL2-*.so.0 2 > /dev/null
             cd - > /dev/null
           fi
         done
