@@ -55,6 +55,15 @@ jobs:
         
         # Create symlink for json headers in expected location
         sudo ln -sf /usr/include/jsoncpp/json /usr/include/json
+        
+        # Fix jsoncpp library linking issue
+        echo "=== jsoncpp library info ==="
+        find /usr -name "*jsoncpp*" -type f 2>/dev/null | head -10 || true
+        # Copy jsoncpp to static-libs directory structure
+        sudo mkdir -p drodrpg/Master/Linux/static-libs/lib
+        if [ -f /usr/lib/x86_64-linux-gnu/libjsoncpp.a ]; then
+          sudo cp /usr/lib/x86_64-linux-gnu/libjsoncpp.a drodrpg/Master/Linux/static-libs/lib/
+        fi
     
     - name: Cache downloaded sources
       uses: actions/cache@v4
@@ -183,6 +192,15 @@ jobs:
         
         # Create symlink for json headers in expected location
         sudo ln -sf /usr/include/jsoncpp/json /usr/include/json
+        
+        # Fix jsoncpp library linking issue
+        echo "=== jsoncpp library info ==="
+        find /usr -name "*jsoncpp*" -type f 2>/dev/null | head -10 || true
+        # Copy jsoncpp to static-libs directory structure
+        sudo mkdir -p drodrpg/Master/Linux/static-libs/lib
+        if [ -f /usr/lib/x86_64-linux-gnu/libjsoncpp.a ]; then
+          sudo cp /usr/lib/x86_64-linux-gnu/libjsoncpp.a drodrpg/Master/Linux/static-libs/lib/
+        fi
     
     - name: Cache downloaded sources
       uses: actions/cache@v4
