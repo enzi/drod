@@ -41,16 +41,17 @@ jobs:
           build-essential \
           cmake \
           ninja-build \
-          libsdl2-dev \
-          libsdl2-ttf-dev \
-          libsdl2-mixer-dev \
           libssl-dev \
           libnghttp2-dev \
           zlib1g-dev \
           wget \
           unzip \
           pkg-config \
-          git
+          git \
+          libasound2-dev \
+          libpulse-dev \
+          libx11-dev \
+          libwayland-dev
         
         # Create symlink for json headers in expected location
         sudo ln -sf /usr/include/jsoncpp/json /usr/include/json
@@ -135,8 +136,8 @@ jobs:
       run: |
         BUILD_DIR=$(find builds -name "drod" -type f | head -1 | xargs dirname)
         if [ -n "$BUILD_DIR" ]; then
-          # Copy required SDL2 shared libs into build dir
-          cp /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0 "$BUILD_DIR/" || true
+          # Copy our built SDL2 shared lib into build dir
+          cp static-libs/lib/libSDL2-2.0.so.0 "$BUILD_DIR/" || true
 
           cd "$BUILD_DIR"
           tar -czf "drodrpg-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" drod libSDL2-*.so.0
@@ -180,16 +181,17 @@ jobs:
           build-essential \
           cmake \
           ninja-build \
-          libsdl2-dev \
-          libsdl2-ttf-dev \
-          libsdl2-mixer-dev \
           libssl-dev \
           libnghttp2-dev \
           zlib1g-dev \
           wget \
           unzip \
           pkg-config \
-          git
+          git \
+          libasound2-dev \
+          libpulse-dev \
+          libx11-dev \
+          libwayland-dev
         
         # Create symlink for json headers in expected location
         sudo ln -sf /usr/include/jsoncpp/json /usr/include/json
@@ -261,8 +263,8 @@ jobs:
         for build_dir in builds/*/; do
           if [ -f "$build_dir/drod" ]; then
             variant=$(basename "$build_dir")
-            # Copy SDL2 libs into each build dir
-            cp /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0 "$build_dir/" || true
+            # Copy our built SDL2 lib into each build dir  
+            cp static-libs/lib/libSDL2-2.0.so.0 "$build_dir/" || true
 
             cd "$build_dir"
             tar -czf "../../dist/drodrpg-linux-${variant}.tar.gz" drod *.dbg libSDL2-*.so.0

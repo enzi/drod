@@ -117,7 +117,7 @@ fi
 BUILDDIR=builds/$NAME
 EXEC="${options[archexec]} ${options[exec]}"
 
-SDL2_CONFIG="$EXEC sdl2-config"
+SDL2_CONFIG="$EXEC static-libs/bin/sdl2-config"
 PKG_CONFIG="$EXEC pkg-config"
 
 declare -a libs

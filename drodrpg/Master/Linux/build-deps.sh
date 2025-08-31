@@ -61,6 +61,9 @@ download_extract() {
 echo "=== Downloading dependencies ==="
 
 # SDL2 libraries
+download_extract "https://github.com/libsdl-org/SDL/releases/download/release-2.28.5/SDL2-2.28.5.tar.gz" \
+    "SDL2-2.28.5.tar.gz" "SDL2-2.28.5"
+
 download_extract "https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.3/SDL2_mixer-2.6.3.tar.gz" \
     "SDL2_mixer-2.6.3.tar.gz" "SDL2_mixer-2.6.3"
 
@@ -168,8 +171,9 @@ build_library "libpng-1.6.39" "" "" "png16"
 build_library "freetype-2.13.0" "" "" "freetype"
 build_library "expat-2.5.0" "" "" "expat"
 build_library "curl-7.88.1" "--disable-ldap --disable-ldaps --disable-rtsp --disable-dict --disable-telnet --disable-tftp --disable-pop3 --disable-imap --disable-smb --disable-smtp --disable-gopher --disable-manual --without-librtmp --without-libidn2 --without-libpsl --without-zstd --without-brotli --enable-static --with-openssl" "" "curl"
-build_library "SDL2_mixer-2.6.3" "--with-ogg=$INSTALL_DIR --with-vorbis=$INSTALL_DIR" "" "SDL2_mixer"
-build_library "SDL2_ttf-2.20.2" "--with-freetype-prefix=$INSTALL_DIR" "" "SDL2_ttf"
+build_library "SDL2-2.28.5" "--disable-video-x11-xss --disable-video-x11-xrandr --disable-pipewire" "" "SDL2"
+build_library "SDL2_mixer-2.6.3" "--with-ogg=$INSTALL_DIR --with-vorbis=$INSTALL_DIR --with-sdl-prefix=$INSTALL_DIR" "" "SDL2_mixer"
+build_library "SDL2_ttf-2.20.2" "--with-freetype-prefix=$INSTALL_DIR --with-sdl-prefix=$INSTALL_DIR" "" "SDL2_ttf"
 build_library "jsoncpp-1.9.5" "-DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF" "" "jsoncpp"
 
 # Handle metakit separately (it's in a different location)
