@@ -42,6 +42,8 @@ jobs:
           cmake \
           ninja-build \
           libsdl2-dev \
+          libsdl2-ttf-dev \
+          libsdl2-mixer-dev \
           libssl-dev \
           libnghttp2-dev \
           zlib1g-dev \
@@ -168,6 +170,8 @@ jobs:
           cmake \
           ninja-build \
           libsdl2-dev \
+          libsdl2-ttf-dev \
+          libsdl2-mixer-dev \
           libssl-dev \
           libnghttp2-dev \
           zlib1g-dev \
