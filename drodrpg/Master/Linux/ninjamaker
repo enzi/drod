@@ -184,9 +184,9 @@ X
 		ilibs+=($BUILDDIR/$(basename $dir).a)
 	done
 	cat <<X
-includes = ${idirs[@]} $(${SDL2_CONFIG} --cflags) $(${PKG_CONFIG} --cflags theora vorbisfile vorbis ogg libpng libcurl expat jsoncpp zlib)
-staticlibs = $(${PKG_CONFIG} --libs-only-L SDL2_mixer SDL2_ttf theora vorbisfile vorbis ogg) -lSDL2_mixer -lSDL2_ttf -ltheora -lvorbisfile -lvorbis -logg -ljpeg -lmk4 $(${PKG_CONFIG} --libs freetype2 libpng libcurl expat jsoncpp zlib)
-dynamiclibs = $(${SDL2_CONFIG} --libs) -lrt -ldl
+includes = ${idirs[@]} -Istatic-libs/include $(${SDL2_CONFIG} --cflags)
+staticlibs = -Lstatic-libs/lib -lSDL2_mixer -lSDL2_ttf -ltheora -lvorbisfile -lvorbis -logg -ljpeg -lmk4 -lfreetype -lpng16 -lcurl -lexpat -ljsoncpp
+dynamiclibs = $(${SDL2_CONFIG} --libs) -lssl -lcrypto -lnghttp2 -lz -lpthread -lm -lrt -ldl
 build $BUILDDIR/drod: link ${ilibs[@]}
 X
 	if ${options[nostatic]}; then
