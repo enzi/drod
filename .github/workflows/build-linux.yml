@@ -89,6 +89,19 @@ jobs:
       run: |
         chmod +x build-deps.sh
         ./build-deps.sh
+        
+        # Copy jsoncpp after static deps are built
+        echo "=== Copying jsoncpp library ==="
+        if [ -f /usr/lib/x86_64-linux-gnu/libjsoncpp.a ]; then
+          cp /usr/lib/x86_64-linux-gnu/libjsoncpp.a static-libs/lib/
+          echo "✓ Copied libjsoncpp.a"
+        else
+          echo "✗ libjsoncpp.a not found"
+        fi
+        
+        # Debug: List what's in static-libs
+        echo "=== Static libraries built ==="
+        ls -la static-libs/lib/ || echo "static-libs/lib directory not found"
     
     - name: Cache build objects
       uses: actions/cache@v4
@@ -245,6 +258,19 @@ jobs:
       run: |
         chmod +x build-deps.sh
         ./build-deps.sh
+        
+        # Copy jsoncpp after static deps are built
+        echo "=== Copying jsoncpp library ==="
+        if [ -f /usr/lib/x86_64-linux-gnu/libjsoncpp.a ]; then
+          cp /usr/lib/x86_64-linux-gnu/libjsoncpp.a static-libs/lib/
+          echo "✓ Copied libjsoncpp.a"
+        else
+          echo "✗ libjsoncpp.a not found"
+        fi
+        
+        # Debug: List what's in static-libs
+        echo "=== Static libraries built ==="
+        ls -la static-libs/lib/ || echo "static-libs/lib directory not found"
     
     - name: Build all variants
       working-directory: drodrpg/Master/Linux
