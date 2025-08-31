@@ -1,0 +1,196 @@
+name: Build DROD Linux
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        config:
+          - { name: "Release x64", arch: "x86_64", build: "release", flags: "-64 -release" }
+          - { name: "Debug x64", arch: "x86_64", build: "debug", flags: "-64 -debug" }
+          - { name: "Release x32", arch: "i686", build: "release", flags: "-32 -release" }
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          gcc-multilib \
+          g++-multilib \
+          libsdl2-dev \
+          libssl-dev \
+          libnghttp2-dev \
+          zlib1g-dev \
+          wget \
+          unzip \
+          pkg-config \
+          libjsoncpp-dev \
+          git
+    
+    - name: Install 32-bit libraries (for 32-bit builds)
+      if: matrix.config.arch == 'i686'
+      run: |
+        sudo dpkg --add-architecture i386
+        sudo apt-get update
+        sudo apt-get install -y \
+          libsdl2-dev:i386 \
+          libssl-dev:i386 \
+          libnghttp2-dev:i386 \
+          zlib1g-dev:i386 \
+          libjsoncpp-dev:i386
+    
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          Master/Linux/deps
+          Master/Linux/static-libs
+        key: ${{ runner.os }}-deps-${{ matrix.config.arch }}-${{ hashFiles('Master/Linux/build-deps.sh') }}
+        restore-keys: |
+          ${{ runner.os }}-deps-${{ matrix.config.arch }}-
+    
+    - name: Build static dependencies
+      working-directory: Master/Linux
+      run: |
+        chmod +x build-deps.sh
+        ./build-deps.sh
+    
+    - name: Generate ninja build files
+      working-directory: Master/Linux
+      run: |
+        chmod +x ninjamaker
+        ./ninjamaker ${{ matrix.config.flags }}
+    
+    - name: Build DROD
+      working-directory: Master/Linux
+      run: |
+        chmod +x build
+        ./build
+    
+    - name: List build artifacts
+      working-directory: Master/Linux
+      run: |
+        find builds/ -type f -executable -name "drod" -exec ls -la {} \;
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: drod-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}
+        path: |
+          Master/Linux/builds/*/drod
+          Master/Linux/builds/*/*.dbg
+        retention-days: 30
+    
+    - name: Create release archive
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      working-directory: Master/Linux
+      run: |
+        BUILD_DIR=$(find builds -name "drod" -type f | head -1 | xargs dirname)
+        if [ -n "$BUILD_DIR" ]; then
+          cd "$BUILD_DIR"
+          tar -czf "drod-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" drod *.dbg
+          mv "drod-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" ../../
+        fi
+    
+    - name: Upload release archive
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      uses: actions/upload-artifact@v3
+      with:
+        name: drod-linux-release-${{ matrix.config.arch }}-${{ matrix.config.build }}
+        path: Master/Linux/drod-linux-*.tar.gz
+        retention-days: 90
+
+  build-all-variants:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          gcc-multilib \
+          g++-multilib \
+          libsdl2-dev \
+          libssl-dev \
+          libnghttp2-dev \
+          zlib1g-dev \
+          wget \
+          unzip \
+          pkg-config \
+          libjsoncpp-dev \
+          git
+        sudo dpkg --add-architecture i386
+        sudo apt-get update
+        sudo apt-get install -y \
+          libsdl2-dev:i386 \
+          libssl-dev:i386 \
+          libnghttp2-dev:i386 \
+          zlib1g-dev:i386 \
+          libjsoncpp-dev:i386
+    
+    - name: Build static dependencies
+      working-directory: Master/Linux
+      run: |
+        chmod +x build-deps.sh
+        ./build-deps.sh
+    
+    - name: Build all variants
+      working-directory: Master/Linux
+      run: |
+        chmod +x ninjamaker build
+        
+        # Build all main variants
+        for arch_flag in "-64" "-32"; do
+          for build_flag in "-release" "-debug" "-dev" "-beta"; do
+            echo "Building with flags: $arch_flag $build_flag"
+            ./ninjamaker $arch_flag $build_flag
+            ./build
+          done
+        done
+    
+    - name: Package all builds
+      working-directory: Master/Linux
+      run: |
+        mkdir -p dist
+        for build_dir in builds/*/; do
+          if [ -f "$build_dir/drod" ]; then
+            variant=$(basename "$build_dir")
+            cd "$build_dir"
+            tar -czf "../../dist/drod-linux-${variant}.tar.gz" drod *.dbg 2>/dev/null || tar -czf "../../dist/drod-linux-${variant}.tar.gz" drod
+            cd - > /dev/null
+          fi
+        done
+    
+    - name: Upload all variants
+      uses: actions/upload-artifact@v3
+      with:
+        name: drod-linux-all-variants
+        path: Master/Linux/dist/
+        retention-days: 30
