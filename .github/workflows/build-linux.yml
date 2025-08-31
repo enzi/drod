@@ -51,6 +51,7 @@ jobs:
           libasound2-dev \
           libpulse-dev \
           libx11-dev \
+          libxext-dev \
           libwayland-dev
         
         # Create symlink for json headers in expected location
@@ -191,6 +192,7 @@ jobs:
           libasound2-dev \
           libpulse-dev \
           libx11-dev \
+          libxext-dev \
           libwayland-dev
         
         # Create symlink for json headers in expected location
