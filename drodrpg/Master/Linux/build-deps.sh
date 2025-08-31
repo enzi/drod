@@ -28,7 +28,7 @@ done
 
 SCRIPT_DIR="$(pwd)"
 DEPS_DIR="$SCRIPT_DIR/deps"
-INSTALL_DIR="$SCRIPT_DIR/static-libs"
+INSTALL_DIR="$SCRIPT_DIR/libs"
 
 mkdir -p "$DEPS_DIR"
 mkdir -p "$INSTALL_DIR"
@@ -112,10 +112,19 @@ build_library() {
     local config_opts="$2"
     local make_opts="$3"
     local lib_name="$4"
+    local build_shared="${5:-false}"  # Optional 5th parameter for shared builds
     
-    if ! $FORCE_REBUILD && library_exists "$lib_name"; then
-        echo "=== Skipping $src_dir (lib${lib_name}.a already exists) ==="
-        return 0
+    if [ "$build_shared" = "true" ]; then
+        local lib_file="lib${lib_name}-2.0.so.0"  # For shared libraries
+        if ! $FORCE_REBUILD && [ -f "$INSTALL_DIR/lib/$lib_file" ]; then
+            echo "=== Skipping $src_dir ($lib_file already exists) ==="
+            return 0
+        fi
+    else
+        if ! $FORCE_REBUILD && library_exists "$lib_name"; then
+            echo "=== Skipping $src_dir (lib${lib_name}.a already exists) ==="
+            return 0
+        fi
     fi
     
     echo "=== Building $src_dir ==="
@@ -134,17 +143,28 @@ build_library() {
         fi
     fi
     
+    # Configure with appropriate static/shared flags
+    if [ "$build_shared" = "true" ]; then
+        local lib_flags="--enable-shared --disable-static"
+    else
+        local lib_flags="--enable-static --disable-shared"
+    fi
+    
     if [ -f "configure" ]; then
-        ./configure --prefix="$INSTALL_DIR" --enable-static --disable-shared $config_opts
+        ./configure --prefix="$INSTALL_DIR" $lib_flags $config_opts
         make -j$(nproc) $make_opts
         make install
     elif [ -f "CMakeLists.txt" ]; then
         mkdir -p build && cd build
-        cmake .. -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=OFF -DENABLE_SHARED=OFF -DENABLE_STATIC=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 $config_opts
+        if [ "$build_shared" = "true" ]; then
+            cmake .. -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=ON -DENABLE_SHARED=ON -DENABLE_STATIC=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5 $config_opts
+        else
+            cmake .. -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=OFF -DENABLE_SHARED=OFF -DENABLE_STATIC=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 $config_opts
+        fi
         make -j$(nproc) $make_opts
         make install
         # Some CMake projects don't install libraries correctly, copy manually if needed
-        if [ -f "lib${lib_name}.a" ] && [ ! -f "$INSTALL_DIR/lib/lib${lib_name}.a" ]; then
+        if [ "$build_shared" != "true" ] && [ -f "lib${lib_name}.a" ] && [ ! -f "$INSTALL_DIR/lib/lib${lib_name}.a" ]; then
             cp "lib${lib_name}.a" "$INSTALL_DIR/lib/"
         fi
         cd ..
@@ -154,12 +174,19 @@ build_library() {
     fi
     
     # Verify the library was built successfully
-    if ! library_exists "$lib_name"; then
-        echo "ERROR: Failed to build lib${lib_name}.a"
-        return 1
+    if [ "$build_shared" = "true" ]; then
+        if [ ! -f "$INSTALL_DIR/lib/$lib_file" ]; then
+            echo "ERROR: Failed to build $lib_file"
+            return 1
+        fi
+        echo "✓ Successfully built $lib_file"
+    else
+        if ! library_exists "$lib_name"; then
+            echo "ERROR: Failed to build lib${lib_name}.a"
+            return 1
+        fi
+        echo "✓ Successfully built lib${lib_name}.a"
     fi
-    
-    echo "✓ Successfully built lib${lib_name}.a"
 }
 
 # Build order matters due to dependencies
@@ -171,7 +198,7 @@ build_library "libpng-1.6.39" "" "" "png16"
 build_library "freetype-2.13.0" "" "" "freetype"
 build_library "expat-2.5.0" "" "" "expat"
 build_library "curl-7.88.1" "--disable-ldap --disable-ldaps --disable-rtsp --disable-dict --disable-telnet --disable-tftp --disable-pop3 --disable-imap --disable-smb --disable-smtp --disable-gopher --disable-manual --without-librtmp --without-libidn2 --without-libpsl --without-zstd --without-brotli --enable-static --with-openssl" "" "curl"
-build_library "SDL2-2.28.5" "--disable-video-x11-scrnsaver --disable-video-x11-xrandr --disable-pipewire" "" "SDL2"
+build_library "SDL2-2.28.5" "--disable-video-x11-scrnsaver --disable-video-x11-xrandr --disable-pipewire" "" "SDL2" "true"
 build_library "SDL2_mixer-2.6.3" "--with-ogg=$INSTALL_DIR --with-vorbis=$INSTALL_DIR --with-sdl-prefix=$INSTALL_DIR" "" "SDL2_mixer"
 build_library "SDL2_ttf-2.20.2" "--with-freetype-prefix=$INSTALL_DIR --with-sdl-prefix=$INSTALL_DIR" "" "SDL2_ttf"
 build_library "jsoncpp-1.9.5" "-DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF" "" "jsoncpp"
@@ -208,6 +235,6 @@ else
 fi
 
 echo "=== Build complete ==="
-echo "Static libraries installed in: $INSTALL_DIR"
+echo "Libraries installed in: $INSTALL_DIR"
 echo "Include headers in: $INSTALL_DIR/include"
 echo "Library files in: $INSTALL_DIR/lib"

@@ -57,9 +57,9 @@ jobs:
         # Create symlink for json headers in expected location
         sudo ln -sf /usr/include/jsoncpp/json /usr/include/json
         
-        # Create static-libs directory structure for dependencies
-        mkdir -p drodrpg/Master/Linux/static-libs/lib
-        mkdir -p drodrpg/Master/Linux/static-libs/include
+        # Create libs directory structure for dependencies
+        mkdir -p drodrpg/Master/Linux/libs/lib
+        mkdir -p drodrpg/Master/Linux/libs/include
     
     - name: Cache downloaded sources
       uses: actions/cache@v4
@@ -72,11 +72,11 @@ jobs:
     - name: Cache static libraries  
       uses: actions/cache@v4
       with:
-        path: drodrpg/Master/Linux/static-libs
-        key: ${{ runner.os }}-static-libs-${{ matrix.config.arch }}-${{ hashFiles('drodrpg/Master/Linux/build-deps.sh') }}
+        path: drodrpg/Master/Linux/libs
+        key: ${{ runner.os }}-libs-${{ matrix.config.arch }}-${{ hashFiles('drodrpg/Master/Linux/build-deps.sh') }}
         restore-keys: |
-          ${{ runner.os }}-static-libs-${{ matrix.config.arch }}-
-          ${{ runner.os }}-static-libs-
+          ${{ runner.os }}-libs-${{ matrix.config.arch }}-
+          ${{ runner.os }}-libs-
     
     - name: Build static dependencies
       working-directory: drodrpg/Master/Linux
@@ -84,9 +84,9 @@ jobs:
         chmod +x build-deps.sh
         ./build-deps.sh
         
-        # Debug: List what's in static-libs
+        # Debug: List what's in libs
         echo "=== Static libraries built ==="
-        ls -la static-libs/lib/ || echo "static-libs/lib directory not found"
+        ls -la libs/lib/ || echo "libs/lib directory not found"
     
     - name: Cache build objects
       uses: actions/cache@v4
@@ -102,7 +102,7 @@ jobs:
         echo "=== Cache Status ==="
         echo "APT cache: $([ -d /var/cache/apt/archives ] && echo "exists" || echo "missing")"
         echo "Downloaded sources: $([ -d drodrpg/Master/Linux/deps ] && echo "$(ls drodrpg/Master/Linux/deps | wc -l) items" || echo "missing")"
-        echo "Static libraries: $([ -d drodrpg/Master/Linux/static-libs ] && echo "exists" || echo "missing")"
+        echo "Static libraries: $([ -d drodrpg/Master/Linux/libs ] && echo "exists" || echo "missing")"
         echo "Build objects: $([ -d drodrpg/Master/Linux/builds ] && echo "exists" || echo "missing")"
     
     - name: Generate ninja build files
@@ -138,7 +138,7 @@ jobs:
         BUILD_DIR=$(find builds -name "drod" -type f | head -1 | xargs dirname)
         if [ -n "$BUILD_DIR" ]; then
           # Copy our built SDL2 shared lib into build dir
-          cp static-libs/lib/libSDL2-2.0.so.0 "$BUILD_DIR/" || true
+          cp libs/lib/libSDL2-2.0.so.0 "$BUILD_DIR/" || true
 
           cd "$BUILD_DIR"
           tar -czf "drodrpg-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" drod libSDL2-*.so.0
@@ -198,9 +198,9 @@ jobs:
         # Create symlink for json headers in expected location
         sudo ln -sf /usr/include/jsoncpp/json /usr/include/json
         
-        # Create static-libs directory structure for dependencies
-        mkdir -p drodrpg/Master/Linux/static-libs/lib
-        mkdir -p drodrpg/Master/Linux/static-libs/include
+        # Create libs directory structure for dependencies
+        mkdir -p drodrpg/Master/Linux/libs/lib
+        mkdir -p drodrpg/Master/Linux/libs/include
     
     - name: Cache downloaded sources
       uses: actions/cache@v4
@@ -213,11 +213,11 @@ jobs:
     - name: Cache static libraries  
       uses: actions/cache@v4
       with:
-        path: drodrpg/Master/Linux/static-libs
-        key: ${{ runner.os }}-static-libs-x86_64-${{ hashFiles('drodrpg/Master/Linux/build-deps.sh') }}
+        path: drodrpg/Master/Linux/libs
+        key: ${{ runner.os }}-libs-x86_64-${{ hashFiles('drodrpg/Master/Linux/build-deps.sh') }}
         restore-keys: |
-          ${{ runner.os }}-static-libs-x86_64-
-          ${{ runner.os }}-static-libs-
+          ${{ runner.os }}-libs-x86_64-
+          ${{ runner.os }}-libs-
     
     - name: Cache build objects (all variants)
       uses: actions/cache@v4
@@ -233,7 +233,7 @@ jobs:
         echo "=== Cache Status ==="
         echo "APT cache: $([ -d /var/cache/apt/archives ] && echo "exists" || echo "missing")"
         echo "Downloaded sources: $([ -d drodrpg/Master/Linux/deps ] && echo "$(ls drodrpg/Master/Linux/deps | wc -l) items" || echo "missing")"
-        echo "Static libraries: $([ -d drodrpg/Master/Linux/static-libs ] && echo "exists" || echo "missing")"
+        echo "Static libraries: $([ -d drodrpg/Master/Linux/libs ] && echo "exists" || echo "missing")"
         echo "Build objects: $([ -d drodrpg/Master/Linux/builds ] && echo "exists" || echo "missing")"
     
     - name: Build static dependencies
@@ -242,9 +242,9 @@ jobs:
         chmod +x build-deps.sh
         ./build-deps.sh
         
-        # Debug: List what's in static-libs
+        # Debug: List what's in libs
         echo "=== Static libraries built ==="
-        ls -la static-libs/lib/ || echo "static-libs/lib directory not found"
+        ls -la libs/lib/ || echo "libs/lib directory not found"
     
     - name: Build all variants
       working-directory: drodrpg/Master/Linux
@@ -266,7 +266,7 @@ jobs:
           if [ -f "$build_dir/drod" ]; then
             variant=$(basename "$build_dir")
             # Copy our built SDL2 lib into each build dir  
-            cp static-libs/lib/libSDL2-2.0.so.0 "$build_dir/" || true
+            cp libs/lib/libSDL2-2.0.so.0 "$build_dir/" || true
 
             cd "$build_dir"
             tar -czf "../../dist/drodrpg-linux-${variant}.tar.gz" drod *.dbg libSDL2-*.so.0

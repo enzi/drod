@@ -117,7 +117,7 @@ fi
 BUILDDIR=builds/$NAME
 EXEC="${options[archexec]} ${options[exec]}"
 
-SDL2_CONFIG="$EXEC static-libs/bin/sdl2-config"
+SDL2_CONFIG="$EXEC libs/bin/sdl2-config"
 PKG_CONFIG="$EXEC pkg-config"
 
 declare -a libs
@@ -184,8 +184,8 @@ X
 		ilibs+=($BUILDDIR/$(basename $dir).a)
 	done
 	cat <<X
-includes = ${idirs[@]} -Istatic-libs/include $(${SDL2_CONFIG} --cflags)
-staticlibs = -Lstatic-libs/lib -lSDL2_mixer -lSDL2_ttf -ltheora -lvorbisfile -lvorbis -logg -ljpeg -lmk4 -lfreetype -lpng16 -lcurl -lexpat -ljsoncpp
+includes = ${idirs[@]} -Ilibs/include $(${SDL2_CONFIG} --cflags)
+staticlibs = -Llibs/lib -lSDL2_mixer -lSDL2_ttf -ltheora -lvorbisfile -lvorbis -logg -ljpeg -lmk4 -lfreetype -lpng16 -lcurl -lexpat -ljsoncpp
 dynamiclibs = $(${SDL2_CONFIG} --libs) -lssl -lcrypto -lnghttp2 -lz -lpthread -lm -lrt -ldl
 build $BUILDDIR/drod: link ${ilibs[@]}
 X
