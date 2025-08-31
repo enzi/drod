@@ -16,7 +16,6 @@ jobs:
         config:
           - { name: "Release x64", arch: "x86_64", build: "release", flags: "-64 -release" }
           - { name: "Debug x64", arch: "x86_64", build: "debug", flags: "-64 -debug" }
-          - { name: "Release x32", arch: "i686", build: "release", flags: "-32 -release" }
     
     steps:
     - name: Checkout repository
@@ -32,8 +31,6 @@ jobs:
           build-essential \
           cmake \
           ninja-build \
-          gcc-multilib \
-          g++-multilib \
           libsdl2-dev \
           libssl-dev \
           libnghttp2-dev \
@@ -43,18 +40,6 @@ jobs:
           pkg-config \
           libjsoncpp-dev \
           git
-    
-    - name: Install 32-bit libraries (for 32-bit builds)
-      if: matrix.config.arch == 'i686'
-      run: |
-        sudo dpkg --add-architecture i386
-        sudo apt-get update
-        sudo apt-get install -y \
-          libsdl2-dev:i386 \
-          libssl-dev:i386 \
-          libnghttp2-dev:i386 \
-          zlib1g-dev:i386 \
-          libjsoncpp-dev:i386
     
     - name: Cache dependencies
       uses: actions/cache@v4
@@ -135,8 +120,6 @@ jobs:
           build-essential \
           cmake \
           ninja-build \
-          gcc-multilib \
-          g++-multilib \
           libsdl2-dev \
           libssl-dev \
           libnghttp2-dev \
@@ -146,14 +129,6 @@ jobs:
           pkg-config \
           libjsoncpp-dev \
           git
-        sudo dpkg --add-architecture i386
-        sudo apt-get update
-        sudo apt-get install -y \
-          libsdl2-dev:i386 \
-          libssl-dev:i386 \
-          libnghttp2-dev:i386 \
-          zlib1g-dev:i386 \
-          libjsoncpp-dev:i386
     
     - name: Build static dependencies
       working-directory: Master/Linux
@@ -167,12 +142,10 @@ jobs:
         chmod +x ninjamaker build
         
         # Build all main variants
-        for arch_flag in "-64" "-32"; do
-          for build_flag in "-release" "-debug" "-dev" "-beta"; do
-            echo "Building with flags: $arch_flag $build_flag"
-            ./ninjamaker $arch_flag $build_flag
-            ./build
-          done
+        for build_flag in "-release" "-debug" "-dev" "-beta"; do
+          echo "Building with flags: -64 $build_flag"
+          ./ninjamaker -64 $build_flag
+          ./build
         done
     
     - name: Package all builds
