@@ -60,10 +60,11 @@ jobs:
         # Fix jsoncpp library linking issue
         echo "=== jsoncpp library info ==="
         find /usr -name "*jsoncpp*" -type f 2>/dev/null | head -10 || true
-        # Copy jsoncpp to static-libs directory structure
-        sudo mkdir -p drodrpg/Master/Linux/static-libs/lib
+        # Create static-libs directory structure with proper ownership
+        mkdir -p drodrpg/Master/Linux/static-libs/lib
+        mkdir -p drodrpg/Master/Linux/static-libs/include
         if [ -f /usr/lib/x86_64-linux-gnu/libjsoncpp.a ]; then
-          sudo cp /usr/lib/x86_64-linux-gnu/libjsoncpp.a drodrpg/Master/Linux/static-libs/lib/
+          cp /usr/lib/x86_64-linux-gnu/libjsoncpp.a drodrpg/Master/Linux/static-libs/lib/
         fi
     
     - name: Cache downloaded sources
@@ -198,10 +199,11 @@ jobs:
         # Fix jsoncpp library linking issue
         echo "=== jsoncpp library info ==="
         find /usr -name "*jsoncpp*" -type f 2>/dev/null | head -10 || true
-        # Copy jsoncpp to static-libs directory structure
-        sudo mkdir -p drodrpg/Master/Linux/static-libs/lib
+        # Create static-libs directory structure with proper ownership
+        mkdir -p drodrpg/Master/Linux/static-libs/lib
+        mkdir -p drodrpg/Master/Linux/static-libs/include
         if [ -f /usr/lib/x86_64-linux-gnu/libjsoncpp.a ]; then
-          sudo cp /usr/lib/x86_64-linux-gnu/libjsoncpp.a drodrpg/Master/Linux/static-libs/lib/
+          cp /usr/lib/x86_64-linux-gnu/libjsoncpp.a drodrpg/Master/Linux/static-libs/lib/
         fi
     
     - name: Cache downloaded sources
