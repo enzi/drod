@@ -68,7 +68,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: drodrpg/Master/Linux/static-libs
-        key: ${{ runner.os }}-static-libs-${{ matrix.config.arch }}-${{ hashFiles('drodrpg/Master/Linux/build-deps.sh') }}-${{ runner.os }}
+        key: ${{ runner.os }}-static-libs-${{ matrix.config.arch }}-${{ hashFiles('drodrpg/Master/Linux/build-deps.sh') }}
         restore-keys: |
           ${{ runner.os }}-static-libs-${{ matrix.config.arch }}-
           ${{ runner.os }}-static-libs-
@@ -196,7 +196,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: drodrpg/Master/Linux/static-libs
-        key: ${{ runner.os }}-static-libs-x86_64-${{ hashFiles('drodrpg/Master/Linux/build-deps.sh') }}-${{ runner.os }}
+        key: ${{ runner.os }}-static-libs-x86_64-${{ hashFiles('drodrpg/Master/Linux/build-deps.sh') }}
         restore-keys: |
           ${{ runner.os }}-static-libs-x86_64-
           ${{ runner.os }}-static-libs-
