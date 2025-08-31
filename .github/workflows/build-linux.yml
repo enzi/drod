@@ -24,6 +24,16 @@ jobs:
         submodules: recursive
         fetch-depth: 0
     
+    - name: Cache APT packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          /var/cache/apt/archives
+          /var/lib/apt/lists
+        key: ${{ runner.os }}-apt-${{ hashFiles('.github/workflows/build-linux.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-apt-
+    
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -44,21 +54,45 @@ jobs:
         # Create symlink for json headers in expected location
         sudo ln -sf /usr/include/jsoncpp/json /usr/include/json
     
-    - name: Cache dependencies
+    - name: Cache downloaded sources
       uses: actions/cache@v4
       with:
-        path: |
-          drodrpg/Master/Linux/deps
-          drodrpg/Master/Linux/static-libs
-        key: ${{ runner.os }}-deps-${{ matrix.config.arch }}-${{ hashFiles('drodrpg/Master/Linux/build-deps.sh') }}
+        path: drodrpg/Master/Linux/deps
+        key: ${{ runner.os }}-sources-${{ hashFiles('drodrpg/Master/Linux/build-deps.sh') }}
         restore-keys: |
-          ${{ runner.os }}-deps-${{ matrix.config.arch }}-
+          ${{ runner.os }}-sources-
+    
+    - name: Cache static libraries  
+      uses: actions/cache@v4
+      with:
+        path: drodrpg/Master/Linux/static-libs
+        key: ${{ runner.os }}-static-libs-${{ matrix.config.arch }}-${{ hashFiles('drodrpg/Master/Linux/build-deps.sh') }}-${{ runner.os }}
+        restore-keys: |
+          ${{ runner.os }}-static-libs-${{ matrix.config.arch }}-
+          ${{ runner.os }}-static-libs-
     
     - name: Build static dependencies
       working-directory: drodrpg/Master/Linux
       run: |
         chmod +x build-deps.sh
         ./build-deps.sh
+    
+    - name: Cache build objects
+      uses: actions/cache@v4
+      with:
+        path: drodrpg/Master/Linux/builds
+        key: ${{ runner.os }}-build-${{ matrix.config.build }}-${{ matrix.config.arch }}-${{ hashFiles('drodrpg/**/*.cpp', 'drodrpg/**/*.h', 'drodrpg/Master/Linux/ninjamaker') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ matrix.config.build }}-${{ matrix.config.arch }}-
+          ${{ runner.os }}-build-${{ matrix.config.build }}-
+    
+    - name: Show cache status
+      run: |
+        echo "=== Cache Status ==="
+        echo "APT cache: $([ -d /var/cache/apt/archives ] && echo "exists" || echo "missing")"
+        echo "Downloaded sources: $([ -d drodrpg/Master/Linux/deps ] && echo "$(ls drodrpg/Master/Linux/deps | wc -l) items" || echo "missing")"
+        echo "Static libraries: $([ -d drodrpg/Master/Linux/static-libs ] && echo "exists" || echo "missing")"
+        echo "Build objects: $([ -d drodrpg/Master/Linux/builds ] && echo "exists" || echo "missing")"
     
     - name: Generate ninja build files
       working-directory: drodrpg/Master/Linux
@@ -116,6 +150,16 @@ jobs:
         submodules: recursive
         fetch-depth: 0
     
+    - name: Cache APT packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          /var/cache/apt/archives
+          /var/lib/apt/lists
+        key: ${{ runner.os }}-apt-${{ hashFiles('.github/workflows/build-linux.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-apt-
+    
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -132,6 +176,43 @@ jobs:
           pkg-config \
           libjsoncpp-dev \
           git
+        
+        # Create symlink for json headers in expected location
+        sudo ln -sf /usr/include/jsoncpp/json /usr/include/json
+    
+    - name: Cache downloaded sources
+      uses: actions/cache@v4
+      with:
+        path: drodrpg/Master/Linux/deps
+        key: ${{ runner.os }}-sources-${{ hashFiles('drodrpg/Master/Linux/build-deps.sh') }}
+        restore-keys: |
+          ${{ runner.os }}-sources-
+    
+    - name: Cache static libraries  
+      uses: actions/cache@v4
+      with:
+        path: drodrpg/Master/Linux/static-libs
+        key: ${{ runner.os }}-static-libs-x86_64-${{ hashFiles('drodrpg/Master/Linux/build-deps.sh') }}-${{ runner.os }}
+        restore-keys: |
+          ${{ runner.os }}-static-libs-x86_64-
+          ${{ runner.os }}-static-libs-
+    
+    - name: Cache build objects (all variants)
+      uses: actions/cache@v4
+      with:
+        path: drodrpg/Master/Linux/builds
+        key: ${{ runner.os }}-build-all-x86_64-${{ hashFiles('drodrpg/**/*.cpp', 'drodrpg/**/*.h', 'drodrpg/Master/Linux/ninjamaker') }}
+        restore-keys: |
+          ${{ runner.os }}-build-all-x86_64-
+          ${{ runner.os }}-build-
+    
+    - name: Show cache status
+      run: |
+        echo "=== Cache Status ==="
+        echo "APT cache: $([ -d /var/cache/apt/archives ] && echo "exists" || echo "missing")"
+        echo "Downloaded sources: $([ -d drodrpg/Master/Linux/deps ] && echo "$(ls drodrpg/Master/Linux/deps | wc -l) items" || echo "missing")"
+        echo "Static libraries: $([ -d drodrpg/Master/Linux/static-libs ] && echo "exists" || echo "missing")"
+        echo "Build objects: $([ -d drodrpg/Master/Linux/builds ] && echo "exists" || echo "missing")"
     
     - name: Build static dependencies
       working-directory: drodrpg/Master/Linux
