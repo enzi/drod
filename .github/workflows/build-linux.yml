@@ -92,11 +92,24 @@ jobs:
         
         # Copy jsoncpp after static deps are built
         echo "=== Copying jsoncpp library ==="
+        echo "Searching for jsoncpp library files..."
+        find /usr -name "*jsoncpp*" -type f 2>/dev/null || true
+        
+        # Try different possible locations
         if [ -f /usr/lib/x86_64-linux-gnu/libjsoncpp.a ]; then
           cp /usr/lib/x86_64-linux-gnu/libjsoncpp.a static-libs/lib/
-          echo "✓ Copied libjsoncpp.a"
+          echo "✓ Copied libjsoncpp.a from /usr/lib/x86_64-linux-gnu/"
+        elif [ -f /usr/lib/libjsoncpp.a ]; then
+          cp /usr/lib/libjsoncpp.a static-libs/lib/
+          echo "✓ Copied libjsoncpp.a from /usr/lib/"
         else
-          echo "✗ libjsoncpp.a not found"
+          echo "✗ libjsoncpp.a static library not found - checking shared library"
+          if [ -f /usr/lib/x86_64-linux-gnu/libjsoncpp.so ]; then
+            echo "Found shared library at /usr/lib/x86_64-linux-gnu/libjsoncpp.so"
+            echo "Note: Using shared library instead of static"
+          else
+            echo "✗ No jsoncpp library found at all"
+          fi
         fi
         
         # Debug: List what's in static-libs
@@ -261,11 +274,24 @@ jobs:
         
         # Copy jsoncpp after static deps are built
         echo "=== Copying jsoncpp library ==="
+        echo "Searching for jsoncpp library files..."
+        find /usr -name "*jsoncpp*" -type f 2>/dev/null || true
+        
+        # Try different possible locations
         if [ -f /usr/lib/x86_64-linux-gnu/libjsoncpp.a ]; then
           cp /usr/lib/x86_64-linux-gnu/libjsoncpp.a static-libs/lib/
-          echo "✓ Copied libjsoncpp.a"
+          echo "✓ Copied libjsoncpp.a from /usr/lib/x86_64-linux-gnu/"
+        elif [ -f /usr/lib/libjsoncpp.a ]; then
+          cp /usr/lib/libjsoncpp.a static-libs/lib/
+          echo "✓ Copied libjsoncpp.a from /usr/lib/"
         else
-          echo "✗ libjsoncpp.a not found"
+          echo "✗ libjsoncpp.a static library not found - checking shared library"
+          if [ -f /usr/lib/x86_64-linux-gnu/libjsoncpp.so ]; then
+            echo "Found shared library at /usr/lib/x86_64-linux-gnu/libjsoncpp.so"
+            echo "Note: Using shared library instead of static"
+          else
+            echo "✗ No jsoncpp library found at all"
+          fi
         fi
         
         # Debug: List what's in static-libs
