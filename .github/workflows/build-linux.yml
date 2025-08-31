@@ -57,7 +57,7 @@ jobs:
           libjsoncpp-dev:i386
     
     - name: Cache dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           Master/Linux/deps
@@ -90,7 +90,7 @@ jobs:
         find builds/ -type f -executable -name "drod" -exec ls -la {} \;
     
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: drod-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}
         path: |
@@ -111,7 +111,7 @@ jobs:
     
     - name: Upload release archive
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: drod-linux-release-${{ matrix.config.arch }}-${{ matrix.config.build }}
         path: Master/Linux/drod-linux-*.tar.gz
@@ -189,7 +189,7 @@ jobs:
         done
     
     - name: Upload all variants
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: drod-linux-all-variants
         path: Master/Linux/dist/
