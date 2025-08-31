@@ -1,4 +1,4 @@
-name: Build DROD Linux
+name: Build DRODRPG Linux
 
 on:
   push:
@@ -45,61 +45,61 @@ jobs:
       uses: actions/cache@v4
       with:
         path: |
-          Master/Linux/deps
-          Master/Linux/static-libs
-        key: ${{ runner.os }}-deps-${{ matrix.config.arch }}-${{ hashFiles('Master/Linux/build-deps.sh') }}
+          drodrpg/Master/Linux/deps
+          drodrpg/Master/Linux/static-libs
+        key: ${{ runner.os }}-deps-${{ matrix.config.arch }}-${{ hashFiles('drodrpg/Master/Linux/build-deps.sh') }}
         restore-keys: |
           ${{ runner.os }}-deps-${{ matrix.config.arch }}-
     
     - name: Build static dependencies
-      working-directory: Master/Linux
+      working-directory: drodrpg/Master/Linux
       run: |
         chmod +x build-deps.sh
         ./build-deps.sh
     
     - name: Generate ninja build files
-      working-directory: Master/Linux
+      working-directory: drodrpg/Master/Linux
       run: |
         chmod +x ninjamaker
         ./ninjamaker ${{ matrix.config.flags }}
     
-    - name: Build DROD
-      working-directory: Master/Linux
+    - name: Build DRODRPG
+      working-directory: drodrpg/Master/Linux
       run: |
         chmod +x build
         ./build
     
     - name: List build artifacts
-      working-directory: Master/Linux
+      working-directory: drodrpg/Master/Linux
       run: |
         find builds/ -type f -executable -name "drod" -exec ls -la {} \;
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: drod-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}
+        name: drodrpg-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}
         path: |
-          Master/Linux/builds/*/drod
-          Master/Linux/builds/*/*.dbg
+          drodrpg/Master/Linux/builds/*/drod
+          drodrpg/Master/Linux/builds/*/*.dbg
         retention-days: 30
     
     - name: Create release archive
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-      working-directory: Master/Linux
+      working-directory: drodrpg/Master/Linux
       run: |
         BUILD_DIR=$(find builds -name "drod" -type f | head -1 | xargs dirname)
         if [ -n "$BUILD_DIR" ]; then
           cd "$BUILD_DIR"
-          tar -czf "drod-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" drod *.dbg
-          mv "drod-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" ../../
+          tar -czf "drodrpg-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" drod *.dbg
+          mv "drodrpg-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" ../../
         fi
     
     - name: Upload release archive
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       uses: actions/upload-artifact@v4
       with:
-        name: drod-linux-release-${{ matrix.config.arch }}-${{ matrix.config.build }}
-        path: Master/Linux/drod-linux-*.tar.gz
+        name: drodrpg-linux-release-${{ matrix.config.arch }}-${{ matrix.config.build }}
+        path: drodrpg/Master/Linux/drodrpg-linux-*.tar.gz
         retention-days: 90
 
   build-all-variants:
@@ -131,13 +131,13 @@ jobs:
           git
     
     - name: Build static dependencies
-      working-directory: Master/Linux
+      working-directory: drodrpg/Master/Linux
       run: |
         chmod +x build-deps.sh
         ./build-deps.sh
     
     - name: Build all variants
-      working-directory: Master/Linux
+      working-directory: drodrpg/Master/Linux
       run: |
         chmod +x ninjamaker build
         
@@ -149,14 +149,14 @@ jobs:
         done
     
     - name: Package all builds
-      working-directory: Master/Linux
+      working-directory: drodrpg/Master/Linux
       run: |
         mkdir -p dist
         for build_dir in builds/*/; do
           if [ -f "$build_dir/drod" ]; then
             variant=$(basename "$build_dir")
             cd "$build_dir"
-            tar -czf "../../dist/drod-linux-${variant}.tar.gz" drod *.dbg 2>/dev/null || tar -czf "../../dist/drod-linux-${variant}.tar.gz" drod
+            tar -czf "../../dist/drodrpg-linux-${variant}.tar.gz" drod *.dbg 2>/dev/null || tar -czf "../../dist/drodrpg-linux-${variant}.tar.gz" drod
             cd - > /dev/null
           fi
         done
@@ -164,6 +164,6 @@ jobs:
     - name: Upload all variants
       uses: actions/upload-artifact@v4
       with:
-        name: drod-linux-all-variants
-        path: Master/Linux/dist/
+        name: drodrpg-linux-all-variants
+        path: drodrpg/Master/Linux/dist/
         retention-days: 30
