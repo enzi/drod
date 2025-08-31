@@ -139,7 +139,7 @@ jobs:
           cp /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0 "$BUILD_DIR/" || true
 
           cd "$BUILD_DIR"
-          tar -czf "drodrpg-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" drod libSDL2-*.so.0 2 > /dev/null
+          tar -czf "drodrpg-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" drod libSDL2-*.so.0
           mv "drodrpg-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" ../../
         fi
     
@@ -265,7 +265,7 @@ jobs:
             cp /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0 "$build_dir/" || true
 
             cd "$build_dir"
-            tar -czf "../../dist/drodrpg-linux-${variant}.tar.gz" drod *.dbg libSDL2-*.so.0 2 > /dev/null
+            tar -czf "../../dist/drodrpg-linux-${variant}.tar.gz" drod *.dbg libSDL2-*.so.0
             cd - > /dev/null
           fi
         done
