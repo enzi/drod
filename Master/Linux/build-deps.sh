@@ -196,7 +196,7 @@ copy_lib64_to_lib
 build_library "curl-7.88.1" "--disable-ldap --disable-ldaps --disable-rtsp --disable-dict --disable-telnet --disable-tftp --disable-pop3 --disable-imap --disable-smb --disable-smtp --disable-gopher --disable-manual --without-librtmp --without-libidn2 --without-libpsl --without-zstd --without-brotli --enable-static --with-openssl=$INSTALL_DIR" "" "curl"
 
 # Build jsoncpp
-build_library "jsoncpp-1.9.5" "-DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF" "" "jsoncpp"
+build_library "jsoncpp-1.9.5" "-DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_DISABLE_CHAR_READER=OFF" "" "jsoncpp"
 
 # Build SDL2 first (required by SDL2_mixer and SDL2_ttf)
 build_library "SDL2-2.32.10" "" "" "SDL2"
@@ -209,7 +209,7 @@ if ! $FORCE_REBUILD && library_exists "mk4"; then
     echo "=== Skipping metakit (libmk4.a already exists) ==="
 else
     echo "=== Building metakit ==="
-    METAKIT_DIR="$SCRIPT_DIR/../../../metakit/unix"
+    METAKIT_DIR="$SCRIPT_DIR/../../metakit/unix"
     cd "$METAKIT_DIR"
     
     # Clean up any previous builds

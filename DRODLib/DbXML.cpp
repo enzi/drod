@@ -63,6 +63,22 @@ CAttachableObject* pCallbackObject = NULL;
 
 streamingOutParams CDbXML::streamingOut;
 
+// static functions
+//Custom allocation function for zlib when Z_SOLO is defined.
+//Required because SDL2_ttf's zlib implementation doesn't provide default allocators.
+static voidpf zlib_alloc(voidpf opaque, uInt items, uInt size)
+{
+	(void)opaque;
+	return malloc(items * size);
+}
+
+//Custom allocation function for zlib when Z_SOLO is defined.
+static void zlib_free(voidpf opaque, voidpf address)
+{
+	(void)opaque;
+	free(address);
+}
+
 //Local vars
 XML_Parser parser = NULL;
 bool bImportComplete = false;
@@ -217,8 +233,8 @@ struct ImportBuffer
 		ASSERT(!d_stream);
 
 		z_stream* ds = new z_stream; // decompression stream (gzip/zlib format)
-		ds->zalloc = (alloc_func)0;
-		ds->zfree = (free_func)0;
+		ds->zalloc = zlib_alloc;
+		ds->zfree = zlib_free;
 		ds->opaque = (voidpf)0;
 
 		int err = inflateInit(ds);

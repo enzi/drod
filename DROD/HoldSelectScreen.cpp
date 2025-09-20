@@ -927,10 +927,14 @@ void CHoldSelectScreen::DownloadSelectedHolds()
 	g_pTheDB->Commit();
 	ExportCleanup();
 	CDrodScreen::callbackContext.resize(0);
-	if (!importedHoldIDs.empty())
+
+	if (result != MID_NoText)
 	{
 		ShowOkMessage(result);
+	}
 
+	if (!importedHoldIDs.empty())
+	{
 		//Download non-present room styles encountered during import.
 		DownloadNewRoomStyles(importedStyles);
 

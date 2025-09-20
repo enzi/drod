@@ -97,7 +97,7 @@ public:
 
 	enum ImportType
 	{
-		None=0,
+		NoImport=0,
 		Data,
 		Demo,
 		Hold,

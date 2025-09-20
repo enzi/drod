@@ -62,6 +62,8 @@ FrontEndLib/CaravelRelease-Temp/
 Master/Linux/build.*
 Master/Linux/builds/
 Master/Linux/drod-sdl2.sublime-*
+Master/Linux/deps
+Master/Linux/static-libs
 
 # DROD RPG Build Folders
 drodrpg/CaravelNet/Debug/
@@ -91,6 +93,9 @@ drodrpg/DRODUtil/Release/
 drodrpg/DRODUtil/Release-Temp/
 drodrpg/DRODUtil/CaravelRelease/
 drodrpg/DRODUtil/CaravelRelease-Temp/
+drodrpg/Master/Linux/builds
+drodrpg/Master/Linux/deps
+drodrpg/Master/Linux/static-libs
 
 # Various things we don't want.
 **/.vs/
