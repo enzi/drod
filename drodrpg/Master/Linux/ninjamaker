@@ -60,6 +60,7 @@ options[dist]=custom
 options[build]=release
 options[nostatic]=false
 options[name]=
+options[cmake]=false
 allargs=
 
 if [[ ${#args[@]} > 0 ]]; then
@@ -83,6 +84,9 @@ if [[ ${#args[@]} > 0 ]]; then
 					;;
 				-no-static)
 					options[${arg//-}]=true
+					;;
+				-cmake)
+					options[cmake]=true
 					;;
 				-caravel|-custom|-steam)
 					options[dist]=${arg/-}
@@ -128,6 +132,147 @@ libs=(
 	${TOPDIR}/../FrontEndLib
 	${TOPDIR}/../BackEndLib
 )
+
+# CMake generation functions
+gen_root_cmake () {
+	cat <<'CMAKE'
+cmake_minimum_required(VERSION 3.16)
+project(drodrpg)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Build type configurations
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
+# Compiler flags
+set(CMAKE_CXX_FLAGS "-pipe -W -Wall -Wno-unused -Wno-unused-parameter -Wno-uninitialized")
+set(CMAKE_CXX_FLAGS_DEBUG "-Og -D_DEBUG -DENABLE_BREAKPOINTS -g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -flto -g")
+
+# Architecture flags
+CMAKE
+	echo "set(CMAKE_CXX_FLAGS \"\${CMAKE_CXX_FLAGS} ${archflags[${options[arch]}]}\")"
+	echo
+	cat <<'CMAKE'
+# Distribution flags
+CMAKE
+	echo "add_definitions(${distflags[${options[dist]}]} -DUSE_SDL_MIXER -DDROD_AUTODETECT_REVISION)"
+	echo
+	cat <<'CMAKE'
+# Static libs path
+set(STATIC_LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Master/Linux/static-libs")
+set(CMAKE_PREFIX_PATH "${STATIC_LIBS_DIR}")
+
+# Include directories
+include_directories("${STATIC_LIBS_DIR}/include")
+
+# Library directories
+link_directories("${STATIC_LIBS_DIR}/lib")
+
+# Find packages
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDL2 REQUIRED sdl2)
+
+# Add subdirectories
+add_subdirectory(../BackEndLib BackEndLib)
+add_subdirectory(../FrontEndLib FrontEndLib)
+add_subdirectory(../DRODLib DRODLib)
+add_subdirectory(../CaravelNet CaravelNet)
+add_subdirectory(DROD)
+CMAKE
+}
+
+gen_lib_cmake () {
+	local path="$1"
+	local lib=$(basename "$path")
+	local vcproj="$path/$lib.2019.vcxproj"
+	local files=($(grep 'Include=.*\.cpp' "$vcproj" | sed 's,^.*Include="\(.\\\)\?\([^"]*\)".*$,\2,g' | sort -u))
+
+	cat <<CMAKE
+cmake_minimum_required(VERSION 3.16)
+
+# Source files
+set(${lib}_SOURCES
+CMAKE
+	for file in "${files[@]}"; do
+		echo "    $file"
+	done
+	cat <<CMAKE
+)
+
+# Create static library
+add_library($lib STATIC \${${lib}_SOURCES})
+
+# Include directories
+target_include_directories($lib PUBLIC .)
+CMAKE
+
+	# Add specific dependencies for libraries
+	case "$lib" in
+		"FrontEndLib")
+			echo "target_link_libraries($lib BackEndLib)"
+			;;
+		"DRODLib")
+			echo "target_link_libraries($lib BackEndLib FrontEndLib)"
+			;;
+		"CaravelNet")
+			echo "target_link_libraries($lib BackEndLib)"
+			;;
+	esac
+}
+
+gen_exe_cmake () {
+	local path="$1"
+	local lib=$(basename "$path")
+	local vcproj="$path/$lib.2019.vcxproj"
+	local files=($(grep 'Include=.*\.cpp' "$vcproj" | sed 's,^.*Include="\(.\\\)\?\([^"]*\)".*$,\2,g' | sort -u))
+
+	cat <<CMAKE
+cmake_minimum_required(VERSION 3.16)
+
+# Source files
+set(DROD_SOURCES
+CMAKE
+	for file in "${files[@]}"; do
+		echo "    $file"
+	done
+	cat <<CMAKE
+)
+
+# Create executable
+add_executable(drodrpg \${DROD_SOURCES})
+
+# Link libraries
+target_link_libraries(drodrpg
+    DRODLib
+    CaravelNet
+    FrontEndLib
+    BackEndLib
+    SDL2_mixer SDL2_ttf SDL2 theora vorbisfile vorbis ogg
+    jpeg mk4 freetype png16 curl ssl crypto expat jsoncpp
+    nghttp2 z pthread m rt dl
+)
+
+# Compiler definitions
+target_compile_definitions(drodrpg PRIVATE -DUSE_SDL_MIXER)
+
+# Include directories
+target_include_directories(drodrpg PRIVATE . ../.. ../../.. ../../../FrontEndLib ../../../BackEndLib)
+
+CMAKE
+
+	# Add steam linking if needed
+	if [[ "${options[dist]}" == "steam" ]]; then
+		cat <<CMAKE
+# Steam library
+target_link_directories(drodrpg PRIVATE ${steamworks_sdk}/redistributable_bin/linux64 ${steamworks_sdk}/redistributable_bin/linux32)
+target_link_libraries(drodrpg steam_api)
+CMAKE
+	fi
+}
 
 gen_rules () {
 	echo "exec = $EXEC"
@@ -221,11 +366,37 @@ gen_lib_build () {
 	echo "build $lib.a: phony $BUILDDIR/$lib.a"
 }
 
-out=build.$NAME.ninja
-gen_rules >$out
-for lib in "${libs[@]}"; do
-	gen_lib_build "$lib" >>$out
-done
-echo "build $BUILDDIR/drod-revision.h: update-revision | always-build" >>$out
-echo "build always-build: phony" >>$out
-echo "build $out: regen ninjamaker ${vcprojs[@]}" >>$out
+if ${options[cmake]}; then
+	# CMake mode: generate CMakeLists.txt files
+	echo "Generating CMakeLists.txt files..."
+
+	# Generate root CMakeLists.txt in drodrpg directory
+	gen_root_cmake >../../CMakeLists.txt
+	echo "Generated ../../CMakeLists.txt"
+
+	# Generate CMakeLists.txt for each library
+	for lib in "${libs[@]}"; do
+		if [[ "$lib" == *"/DROD" ]]; then
+			# This is the executable
+			gen_exe_cmake "$lib" >"$lib/CMakeLists.txt"
+			echo "Generated $lib/CMakeLists.txt (executable)"
+		else
+			# This is a library
+			gen_lib_cmake "$lib" >"$lib/CMakeLists.txt"
+			echo "Generated $lib/CMakeLists.txt (library)"
+		fi
+	done
+
+	echo "CMake files generated successfully!"
+	echo "You can now open the drodrpg directory in CLion."
+else
+	# Original ninja mode
+	out=build.$NAME.ninja
+	gen_rules >$out
+	for lib in "${libs[@]}"; do
+		gen_lib_build "$lib" >>$out
+	done
+	echo "build $BUILDDIR/drod-revision.h: update-revision | always-build" >>$out
+	echo "build always-build: phony" >>$out
+	echo "build $out: regen ninjamaker ${vcprojs[@]}" >>$out
+fi

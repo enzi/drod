@@ -209,7 +209,7 @@ if ! $FORCE_REBUILD && library_exists "mk4"; then
     echo "=== Skipping metakit (libmk4.a already exists) ==="
 else
     echo "=== Building metakit ==="
-    METAKIT_DIR="$SCRIPT_DIR/../../../metakit/unix"
+    METAKIT_DIR="$SCRIPT_DIR/../../metakit/unix"
     cd "$METAKIT_DIR"
     
     # Clean up any previous builds
