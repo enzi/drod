@@ -22,11 +22,16 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64")
 
 # Distribution flags
-add_definitions(-DCARAVELBUILD -DUSE_SDL_MIXER -DDROD_AUTODETECT_REVISION)
+add_definitions(-DUSE_SDL_MIXER -DDROD_AUTODETECT_REVISION)
+
+if (ENABLE_CARAVELNET)
+    add_definitions(-DCARAVELBUILD)
+endif ()
 
 # Steam-specific configuration
 if(BUILD_STEAM)
     add_definitions(-DSTEAMBUILD)
+    add_definitions(-DSTEAMBUILD_TSS_APP)
 
     # Steam SDK path - you can override this with -DSTEAM_SDK_PATH=...
     # /media/ext-data/sdks/steamworks_sdk

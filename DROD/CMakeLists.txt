@@ -94,13 +94,15 @@ set(DROD_LIBRARIES
     BackEndLib
     # Static libraries (in ninjamaker order)
     SDL2_mixer SDL2_ttf SDL2 theora vorbisfile vorbis ogg
-    jpeg mk4 freetype png16 curl ssl crypto expat jsoncpp
+    jpeg mk4 freetype png16 curl ssl crypto expat
     # Dynamic libraries are already in CMAKE_EXE_LINKER_FLAGS
 )
 
 # Add CaravelNet conditionally
 if(ENABLE_CARAVELNET)
     list(APPEND DROD_LIBRARIES CaravelNet)
+    # jsoncpp must come after CaravelNet since CaravelNet depends on it
+    list(APPEND DROD_LIBRARIES jsoncpp)
 endif()
 
 # Add Steam libraries if building Steam version
