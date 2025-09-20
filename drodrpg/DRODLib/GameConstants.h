@@ -125,6 +125,9 @@ extern const WCHAR wszVersionReleaseNumber[];
 #define CMD_EXTRA_SCRIPT_SELECT_ALL (COMMAND_COUNT+41)
 #define CMD_EXTRA_SCRIPT_TO_TEXT (COMMAND_COUNT+42)
 #define CMD_EXTRA_SCRIPT_FROM_TEXT (COMMAND_COUNT+43)
+#define CMD_EXTRA_SCRIPT_ADD_COMMAND (COMMAND_COUNT+44)
+#define CMD_EXTRA_SCRIPT_CHAR_OPTIONS (COMMAND_COUNT+45)
+#define CMD_EXTRA_SHOW_MAP (COMMAND_COUNT+46)
 
 //Sword orientation.
 static const UINT NW = 0;
@@ -201,6 +204,7 @@ namespace InputCommands
 		DCMD_LoadGame,
 		DCMD_QuickSave,
 		DCMD_QuickLoad,
+		DCMD_ShowMap,
 
 		//Dialogs and screens
 		DCMD_SkipSpeech,
@@ -245,6 +249,8 @@ namespace InputCommands
 		DCMD_Script_SelectAll,
 		DCMD_Script_ToText,
 		DCMD_Script_FromText,
+		DCMD_Script_AddCommand,
+		DCMD_Script_CharacterOptions,
 
 		DCMD_Count,
 		DCMD_NotFound=DCMD_Count,
@@ -275,7 +281,8 @@ static inline bool bIsVirtualCommand(const int command)
 static inline bool bIsGameScreenCommand(const int command)
 {
 	return bIsGameCommand(command) ||
-		(command >= CMD_ADVANCE_CUTSCENE && command <= CMD_EXTRA_RELOAD_STYLE);
+		(command >= CMD_ADVANCE_CUTSCENE && command <= CMD_EXTRA_RELOAD_STYLE) ||
+		command == CMD_EXTRA_SHOW_MAP;
 }
 
 static inline bool bIsEditorCommand(const int command)
@@ -285,7 +292,7 @@ static inline bool bIsEditorCommand(const int command)
 		command == CMD_EXTRA_SKIP_SPEECH || command == CMD_EXTRA_CHAT_HISTORY ||
 		command == CMD_EXTRA_OPEN_CHAT || command == CMD_EXTRA_RELOAD_STYLE ||
 		command == CMD_EXTRA_SHOW_HELP || command == CMD_EXTRA_EDIT_VARS ||
-		command >= CMD_EXTRA_SCRIPT_SELECT_ALL;
+		(command >= CMD_EXTRA_SCRIPT_SELECT_ALL && command <= CMD_EXTRA_SCRIPT_CHAR_OPTIONS);
 }
 
 static inline bool bIsEditSelectCommand(const int command)
